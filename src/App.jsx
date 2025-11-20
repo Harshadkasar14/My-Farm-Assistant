@@ -9,15 +9,20 @@ import Library from "./components/library";
 import Logbook from "./components/logbook";
 import Setting from "./components/setting";
 import TaskDetails from "./components/task_details";
+import Header from "./Header/header";
+import TodaysWork from "./components/todays_work";
 
 export default function App() {
   return (
+    <>
+    <Header />
     <div className="flex">
       <Sidebar />
 
       <div className="ml-64 flex-1">
         <Routes>
-          <Route path="/" element={<Calendar />} />
+          <Route path="/" element={<TodaysWork />} />
+          <Route path="/todays_work" element={<TodaysWork />} />
           <Route path="/calendar" element={<Calendar />} />
 
           <Route path="/field_details" element={<FieldDetails />} />
@@ -33,5 +38,6 @@ export default function App() {
         </Routes>
       </div>
     </div>
+    </>
   );
 }

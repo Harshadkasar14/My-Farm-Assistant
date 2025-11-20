@@ -22,51 +22,9 @@ Note: lucide icons will be replaced if lucide script is present in the page (we 
 
 import React, { useEffect, useMemo, useState } from "react";
 
-const sampleCrops = [
-  {
-    id: "tomato",
-    nameEn: "Tomato",
-    nameTa: "தக்காளி",
-    category: "vegetable",
-    daysToMaturity: 90,
-    description: "Popular vegetable for many climates.",
-  },
-  {
-    id: "mango",
-    nameEn: "Mango",
-    nameTa: "மாம்பழம்",
-    category: "fruit",
-    daysToMaturity: 365,
-    description: "Tropical fruit — perennial tree.",
-  },
-  {
-    id: "wheat",
-    nameEn: "Wheat",
-    nameTa: "கோதுமை",
-    category: "grain",
-    daysToMaturity: 120,
-    description: "Staple grain crop.",
-  },
-  {
-    id: "rose",
-    nameEn: "Rose",
-    nameTa: "ரோஜா",
-    category: "flower",
-    daysToMaturity: null,
-    description: "Ornamental flower.",
-  },
-  {
-    id: "apple",
-    nameEn: "Apple",
-    nameTa: "ஆப்பிள்",
-    category: "tree",
-    daysToMaturity: 730,
-    description: "Temperate fruit tree.",
-  },
-];
 
 export default function Library() {
-  const [crops, setCrops] = useState(sampleCrops);
+  const [crops, setCrops] = useState([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [showDrawer, setShowDrawer] = useState(false);
@@ -89,6 +47,22 @@ export default function Library() {
     }
   }, [crops, showDrawer, showPopover]);
 
+  useEffect(() => {
+  async function loadFromBackend() {
+    try {
+      const res = await fetch("http://localhost:5000/api/crops");
+      const data = await res.json();
+      setCrops(data);
+    } catch (err) {
+      console.error("Error loading crops", err);
+      setErrorMode(true);
+    }
+  }
+
+  loadFromBackend();
+}, []);
+
+
   const filtered = useMemo(() => {
     if (errorMode) return [];
     return crops.filter((c) => {
@@ -107,24 +81,43 @@ export default function Library() {
     setShowDrawer(false);
   }
 
-  function handleCreateCrop(e) {
-    e.preventDefault();
-    // Basic validation
-    if (!formValues.nameEn.trim() || !formValues.category) {
-      alert("Please provide English name and category.");
-      return;
-    }
-    const newCrop = {
-      id: `${formValues.nameEn.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`,
-      nameEn: formValues.nameEn,
-      nameTa: formValues.nameTa,
-      category: formValues.category,
-      daysToMaturity: formValues.daysToMaturity ? Number(formValues.daysToMaturity) : null,
-      description: "User-created crop",
-    };
-    setCrops((s) => [newCrop, ...s]);
-    setShowDrawer(false);
+ async function handleCreateCrop(e) {
+  e.preventDefault();
+
+  if (!formValues.nameEn.trim() || !formValues.category) {
+    alert("Please provide English name and category.");
+    return;
   }
+
+  const newCrop = {
+    nameEn: formValues.nameEn,
+    nameTa: formValues.nameTa,
+    category: formValues.category,
+    daysToMaturity: formValues.daysToMaturity
+      ? Number(formValues.daysToMaturity)
+      : null,
+    defaultCareTemplateId: formValues.defaultCareTemplateId || null,
+  };
+
+  try {
+    const res = await fetch("http://localhost:5000/api/crops", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newCrop),
+    });
+
+    const savedCrop = await res.json();
+
+    // Add to UI
+    setCrops((prev) => [savedCrop, ...prev]);
+
+    setShowDrawer(false);
+  } catch (err) {
+    console.error("Error creating crop", err);
+    alert("Error: Could not save crop.");
+  }
+}
+
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -233,7 +226,7 @@ export default function Library() {
           {/* Crops Grid */}
           <div id="cropsGrid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {errorMode ? null : filtered.map((crop) => (
-              <article key={crop.id} className="bg-white border rounded-lg p-4 shadow-sm">
+              <article key={crop._id} className="bg-white border rounded-lg p-4 shadow-sm">
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-semibold">{crop.nameEn.charAt(0)}</div>
                   <div className="flex-1">

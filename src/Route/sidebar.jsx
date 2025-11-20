@@ -6,6 +6,11 @@ export default function Sidebar() {
     <aside className="w-64 bg-white border-r p-4 space-y-2 h-screen fixed">
       <nav className="space-y-2">
 
+        <Link to="/todays_work" className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg">
+          <Calendar className="w-5 h-5" />
+          <span>Todays Work</span>
+        </Link>
+
         <Link to="/calendar" className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg">
           <Calendar className="w-5 h-5" />
           <span>Calendar</span>
