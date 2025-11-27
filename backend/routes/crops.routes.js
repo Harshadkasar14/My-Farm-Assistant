@@ -23,4 +23,8 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/", async (req, res) => {
+  res.json(await Crop.find().lean());
+});
+
 export default router;

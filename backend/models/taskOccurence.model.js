@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 const TaskOccurrenceSchema = new mongoose.Schema({
   userId: String,
   cropInstanceId: String,
