@@ -1,12 +1,17 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+console.log("JWT_SECRET at startup:", process.env.JWT_SECRET);
+
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import cropRoutes from "./routes/crops.routes.js";
+import cropLibraryRoutes from "./routes/cropLibrary.routes.js";
 import fieldsRouter from "./routes/fields.routes.js";
 import fieldDetail  from "./routes/fieldDetail.routes.js";
 import areaRoutes from "./routes/area.routes.js";
 import cropInstanceRoutes from "./routes/cropInstances.routes.js";
-
+import userRoutes from "./routes/user.routes.js";
 
 const app = express();
 
@@ -31,7 +36,8 @@ export function genId(prefix = "") {
 }
 
 // Routes
-app.use("/api/crops", cropRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/crop-libraries", cropLibraryRoutes);
 app.use("/api/fields", fieldsRouter);
 app.use("/api/fieldDetails", fieldDetail);
 app.use("/api/areas", areaRoutes);

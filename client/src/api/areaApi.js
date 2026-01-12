@@ -13,7 +13,7 @@ export async function apiGetCropInstances(areaId) {
 }
 
 export async function apiGetLibraryCrops() {
-  return fetch(`${API}/api/crops`).then(r => r.json());
+  return fetch(`${API}/api/crop-libraries`).then(r => r.json());
 }
 
 export async function apiCreateCropInstance(payload) {

@@ -1,18 +1,11 @@
-const UserSchema = new mongoose.Schema({
-  uid: String,
-  firstName: String,
-  lastName: String,
-  email: String,
-  role: String,
+import mongoose from "mongoose";
 
-  settings: {
-    language: { type: String, default: "EN" },
-    notificationsEnabled: Boolean,
-    backupEnabled: Boolean,
-    notificationPermission: String,
-    weekStart: String,
-    lastSync: Date,
-  }
+const UserSchema = new mongoose.Schema({
+ fullName: { type: String, required: true },
+ email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+
+
 }, { timestamps: true });
 
 export default mongoose.model("User", UserSchema);

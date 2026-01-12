@@ -154,10 +154,12 @@ export default function AreaDetail() {
               >
                 <div>
                   <h3 className="font-semibold">{ci.name}</h3>
+                  
                   <p className="text-sm text-gray-600">
                     Started {new Date(ci.startDate).toLocaleDateString("en-IN")}
                   </p>
                 </div>
+                
 
                 <button className="p-2 rounded hover:bg-gray-100">
                   <Edit size={18} />

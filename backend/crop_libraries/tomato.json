@@ -1,0 +1,197 @@
+{
+  "_id": "ObjectId('...')",
+  "name": "Tomato",
+  "category": "Vegetable",
+  "scientificName": "Solanum lycopersicum",
+  "totalDurationDays": 120,
+
+  "idealConditions": {
+    "soil": {
+      "preferredType": ["Sandy loam", "Loam"],
+      "pHRange": "6.0 - 7.5",
+      "drainage": "Well-drained soil required",
+      "soilPreparation": [
+        "Plough land 2–3 times",
+        "Remove stones and weeds",
+        "Add well-decomposed farmyard manure"
+      ]
+    },
+    "climate": {
+      "temperatureRange": "18°C – 30°C",
+      "rainfall": "Moderate, avoid waterlogging",
+      "sunlight": "Full sunlight (6–8 hours daily)"
+    }
+  },
+
+  "planting": {
+    "method": "Transplanting",
+    "seedRate": "100–150 g per acre",
+    "seedTreatment": [
+      "Treat seeds with fungicide or bio-agent",
+      "Soak seeds in water for 4–6 hours before sowing"
+    ],
+    "spacing": {
+      "rowToRow": "60 cm",
+      "plantToPlant": "45 cm"
+    },
+    "nurseryPeriodDays": 25,
+    "transplantingNotes": [
+      "Transplant healthy seedlings",
+      "Plant during evening hours",
+      "Irrigate immediately after transplanting"
+    ]
+  },
+
+  "stages": [
+    {
+      "stageName": "Planting & Establishment",
+      "startDay": 0,
+      "endDay": 15,
+
+      "tasks": [
+        {
+          "taskType": "watering",
+          "title": "Light irrigation after transplanting",
+          "schedule": {
+            "type": "interval",
+            "everyDays": 2
+          },
+          "notes": "Avoid overwatering to prevent root rot"
+        },
+        {
+          "taskType": "fertilizer",
+          "title": "Apply basal manure",
+          "schedule": {
+            "type": "once",
+            "day": 0
+          },
+          "defaultQuantity": "5–6 tons FYM per acre",
+          "notes": "Incorporate manure into soil before planting"
+        }
+      ]
+    },
+
+    {
+      "stageName": "Vegetative Growth",
+      "startDay": 16,
+      "endDay": 45,
+
+      "tasks": [
+        {
+          "taskType": "watering",
+          "title": "Regular irrigation",
+          "schedule": {
+            "type": "interval",
+            "everyDays": 3
+          }
+        },
+        {
+          "taskType": "fertilizer",
+          "title": "Apply nitrogen fertilizer",
+          "schedule": {
+            "type": "interval",
+            "everyDays": 15
+          },
+          "defaultQuantity": "20 kg Nitrogen per acre"
+        },
+        {
+          "taskType": "weeding",
+          "title": "Manual weeding between rows",
+          "schedule": {
+            "type": "interval",
+            "everyDays": 15
+          }
+        },
+        {
+          "taskType": "interculture",
+          "title": "Earthing up around plants",
+          "schedule": {
+            "type": "once",
+            "day": 30
+          }
+        }
+      ]
+    },
+
+    {
+      "stageName": "Flowering & Fruiting",
+      "startDay": 46,
+      "endDay": 90,
+
+      "tasks": [
+        {
+          "taskType": "watering",
+          "title": "Adequate irrigation during flowering",
+          "schedule": {
+            "type": "interval",
+            "everyDays": 4
+          },
+          "notes": "Moisture stress reduces fruit set"
+        },
+        {
+          "taskType": "fertilizer",
+          "title": "Apply potassium fertilizer",
+          "schedule": {
+            "type": "interval",
+            "everyDays": 20
+          },
+          "defaultQuantity": "15 kg Potash per acre"
+        },
+        {
+          "taskType": "spraying",
+          "title": "Spray for pests and diseases",
+          "schedule": {
+            "type": "interval",
+            "everyDays": 10
+          },
+          "commonPests": [
+            "Fruit borer",
+            "Whitefly",
+            "Aphids"
+          ],
+          "commonDiseases": [
+            "Early blight",
+            "Leaf curl virus"
+          ]
+        }
+      ]
+    },
+
+    {
+      "stageName": "Harvesting",
+      "startDay": 91,
+      "endDay": 120,
+
+      "tasks": [
+        {
+          "taskType": "harvest",
+          "title": "Harvest mature tomatoes",
+          "schedule": {
+            "type": "interval",
+            "everyDays": 4
+          },
+          "notes": "Harvest early morning for better shelf life"
+        }
+      ]
+    }
+  ],
+
+  "harvestDetails": {
+    "firstHarvestDays": 90,
+    "harvestMethod": "Hand picking",
+    "averageYield": "20–25 tons per acre"
+  },
+
+  "postHarvest": {
+    "sorting": "Remove damaged and diseased fruits",
+    "storage": "Store in cool, ventilated place",
+    "shelfLife": "5–7 days at room temperature"
+  },
+
+  "generalTips": [
+    "Avoid waterlogging at all stages",
+    "Rotate crops to prevent disease buildup",
+    "Do not spray pesticides during peak sunlight",
+    "Maintain field hygiene"
+  ]
+}
