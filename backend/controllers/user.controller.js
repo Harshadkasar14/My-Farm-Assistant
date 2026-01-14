@@ -40,7 +40,7 @@ export async function handleSignIn(req, res) {
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(401).json({ message: "Invalid email or password" });
-        }
+         }
 
         // 🔑 Generate JWT
         const token = generateToken(user);

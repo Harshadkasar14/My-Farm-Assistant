@@ -8,10 +8,10 @@ import mongoose from "mongoose";
 import cors from "cors";
 import cropLibraryRoutes from "./routes/cropLibrary.routes.js";
 import fieldsRouter from "./routes/fields.routes.js";
-import fieldDetail  from "./routes/fieldDetail.routes.js";
 import areaRoutes from "./routes/area.routes.js";
 import cropInstanceRoutes from "./routes/cropInstances.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import taskRoutes from "./routes/task.routes.js";
 
 const app = express();
 
@@ -39,10 +39,9 @@ export function genId(prefix = "") {
 app.use("/api/users", userRoutes);
 app.use("/api/crop-libraries", cropLibraryRoutes);
 app.use("/api/fields", fieldsRouter);
-app.use("/api/fieldDetails", fieldDetail);
 app.use("/api/areas", areaRoutes);
 app.use("/api/cropInstances", cropInstanceRoutes);
-
+app.use("/api/tasks", taskRoutes);
 
 app.listen(5000, () => {
   console.log("Server running on http://localhost:5000");

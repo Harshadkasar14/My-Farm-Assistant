@@ -8,7 +8,6 @@ import Login from "./auth/signIn";
 import Signup from "./auth/signUp";
 
 import Calendar from "./components/calendar";
-import FieldDetails from "./components/field_details";
 import FieldList from "./components/field_list";
 import AreaDetail from "./components/area_detail";
 import Library from "./components/library";
@@ -45,8 +44,6 @@ export default function App() {
           <Route path="/todays_work" element={<TodaysWork />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/area/:areaId" element={<AreaDetail />} />
-
-          <Route path="/field_details" element={<FieldDetails />} />
           <Route path="/field_list" element={<FieldList />} />
 
           <Route path="/library" element={<Library />} />

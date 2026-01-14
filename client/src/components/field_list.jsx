@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Trash2, Edit, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import api from '../api/axiosApi.js';
 
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 export default function FieldList() {
   const [fields, setFields] = useState([]);
@@ -26,12 +26,11 @@ const navigate = useNavigate();
   async function loadFields() {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/fields`);
-      const data = await res.json();
-      setFields(data);
+      const res = await api.get("/api/fields");
+      setFields(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error('Failed to load fields', err);
-      alert('Failed to load fields');
+      setFields([]);
     } finally {
       setLoading(false);
     }
@@ -56,35 +55,27 @@ const navigate = useNavigate();
 
   async function saveField() {
     if (!fieldForm.name.trim()) {
-      alert('Field name is required');
-      return;
+       return alert('Field name is required');
+     
     }
 
     try {
       if (editField) {
-        const res = await fetch(`${API_BASE}/api/fields/${editField._id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+         await api.put(`/api/fields/${editField._id}`, {
             name: fieldForm.name,
             size: fieldForm.size ? Number(fieldForm.size) : null,
             sizeUnit: fieldForm.sizeUnit,
             notes: fieldForm.notes
-          })
+          
         });
-        if (!res.ok) throw new Error('Update failed');
       } else {
-        const res = await fetch(`${API_BASE}/api/fields`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+         await api.post("/api/fields", {
             name: fieldForm.name,
             size: fieldForm.size ? Number(fieldForm.size) : null,
             sizeUnit: fieldForm.sizeUnit,
             notes: fieldForm.notes
-          })
+          
         });
-        if (!res.ok) throw new Error('Create failed');
       }
       await loadFields();
       setDrawerOpen(false);
@@ -99,16 +90,13 @@ const navigate = useNavigate();
   }
 
   async function handleDeleteConfirmed() {
-    if (!deleteModal.target) return;
-    const { type, id } = deleteModal.target;
+    const { type, id, fieldId, areaId } = deleteModal.target;
     try {
       if (type === 'field') {
-        const res = await fetch(`${API_BASE}/api/fields/${id}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error('Delete failed');
-      } else if (type === 'area') {
+        await api.delete(`/api/fields/${id}`);
+      } else  {
         // payload includes fieldId and areaId in target
-        const res = await fetch(`${API_BASE}/api/fields/${deleteModal.target.fieldId}/areas/${deleteModal.target.areaId}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error('Delete failed');
+        await api.delete(`/api/fields/${fieldId}/areas/${areaId}`, { method: 'DELETE' });
       }
       await loadFields();
       setDeleteModal({ open: false, target: null });
@@ -144,31 +132,21 @@ const navigate = useNavigate();
     const { fieldId, area } = editingAreaContext;
     try {
       if (area) {
-        const res = await fetch(`${API_BASE}/api/fields/${fieldId}/areas/${area._id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        await api.put(`/api/fields/${fieldId}/areas/${area._id}`, {
             name: areaForm.name,
             typeId: areaForm.typeId,
             size: areaForm.size ? Number(areaForm.size) : null,
             sizeUnit: areaForm.sizeUnit,
             notes: areaForm.notes
-          })
         });
-        if (!res.ok) throw new Error('Update area failed');
       } else {
-        const res = await fetch(`${API_BASE}/api/fields/${fieldId}/areas`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+         await api.post(`/api/fields/${fieldId}/areas`, {
             name: areaForm.name,
             typeId: areaForm.typeId,
             size: areaForm.size ? Number(areaForm.size) : null,
             sizeUnit: areaForm.sizeUnit,
             notes: areaForm.notes
-          })
         });
-        if (!res.ok) throw new Error('Create area failed');
       }
       await loadFields();
       setAreaDrawerOpen(false);

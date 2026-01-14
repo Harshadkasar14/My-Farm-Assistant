@@ -140,4 +140,4 @@ const CropLibrarySchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("CropLibrary", CropLibrarySchema);
+export default mongoose.model("LibraryCrop", CropLibrarySchema);

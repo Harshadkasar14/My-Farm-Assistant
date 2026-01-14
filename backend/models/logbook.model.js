@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const LogSchema = new mongoose.Schema({
-  userId: String,
+  userId: {type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true},
   taskOccurrenceId: String,
   cropInstanceId: String,
   action: String,      // completed / skipped / snoozed

@@ -3,48 +3,71 @@ import express from "express";
 import Field from "../models/fields.model.js";
 import Area from "../models/area_detail.model.js";
 import { InMemoryStore, genId } from "../server.js";
+import { authenticate } from "../middlewares/auth.middleware.js";
+import CropInstance from "../models/cropInstance.model.js";
 
 const router = express.Router();
+router.use(authenticate);
 
 // GET all fields
 router.get("/", async (req, res) => {
   try {
-    // If connected to Mongo
     if (Field.db.readyState === 1) {
-      const fields = await Field.find().lean();
-      const result = await Promise.all(
-        fields.map(async (f) => {
-          const areas = await Area.find({ fieldId: f._id });
-          return {
-            id: f._id,
-            ...f,
-            areas, // ← ADD THIS
-            totalAreas: areas.length,
-            totalCrops: areas.reduce(
-              (s, a) => s + (a.cropInstancesCount || 0),
-              0
-            ),
-            totalOverdue: areas.reduce(
-              (s, a) => s + (a.overdueTasksCount || 0),
-              0
-            ),
-          };
-        })
+      const fields = await Field.find({ userId: req.userId }).lean();
+
+      // get all fieldIds
+      const fieldIds = fields.map(f => f._id);
+
+      // get all areas for these fields
+      const areas = await Area.find({
+        fieldId: { $in: fieldIds },
+        userId: req.userId
+      }).lean();
+
+      // get all areaIds
+      const areaIds = areas.map(a => a._id);
+
+      // 🔥 AGGREGATE CROP COUNTS
+      const cropCounts = await CropInstance.aggregate([
+        { $match: { areaId: { $in: areaIds }} },
+        { $group: { _id: "$areaId", count: { $sum: 1 } } }
+      ]);
+
+      const cropCountMap = Object.fromEntries(
+        cropCounts.map(c => [c._id.toString(), c.count])
       );
+
+      // attach counts to areas
+      const areasByField = {};
+      areas.forEach(area => {
+        area.cropInstancesCount = cropCountMap[area._id.toString()] || 0;
+
+        if (!areasByField[area.fieldId]) {
+          areasByField[area.fieldId] = [];
+        }
+        areasByField[area.fieldId].push(area);
+      });
+
+      // build final response
+      const result = fields.map(f => {
+        const fieldAreas = areasByField[f._id.toString()] || [];
+
+        return {
+          id: f._id,
+          ...f,
+          areas: fieldAreas,
+          totalAreas: fieldAreas.length,
+          totalCrops: fieldAreas.reduce(
+            (s, a) => s + a.cropInstancesCount,
+            0
+          ),
+        };
+      });
+
       return res.json(result);
     }
 
-    // In-memory fallback
-    const result = InMemoryStore.fields.map((f) => {
-      const areas = InMemoryStore.areas.filter((a) => a.fieldId === f.id);
-      
-      return {
-        ...f,
-        areas,
-        totalAreas: areas.length,
-      };
-    });
-    return res.json(result);
+    return res.json([]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -52,28 +75,36 @@ router.get("/", async (req, res) => {
 
 // GET one field
 router.get("/:id", async (req, res) => {
-  const id = req.params.id;
+  const { id } = req.params;
 
   try {
     if (Field.db.readyState === 1) {
-      const f = await Field.findById(id).lean();
+      const f = await Field.findOne({
+        _id: id,
+        userId: req.userId
+      }).lean();
+
       if (!f) return res.status(404).json({ error: "Not found" });
       return res.json({ id: f._id, ...f });
     }
 
-    const f = InMemoryStore.fields.find((x) => x.id === id);
+    const f = InMemoryStore.fields.find(
+      x => x.id === id && x.userId === req.userId
+    );
+
     return f ? res.json(f) : res.status(404).json({ error: "Not found" });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
+
 // CREATE
 router.post("/", async (req, res) => {
   const payload = req.body;
 
   if (Field.db.readyState === 1) {
-    const doc = new Field(payload);
+    const doc = new Field({...payload,  userId: req.userId });
     await doc.save();
     return res.status(201).json({ id: doc._id, ...doc.toObject() });
   }
@@ -85,38 +116,34 @@ router.post("/", async (req, res) => {
 
 // UPDATE
 router.put("/:id", async (req, res) => {
-  const id = req.params.id;
+  const { id } = req.params;
 
   if (Field.db.readyState === 1) {
-    const updated = await Field.findByIdAndUpdate(id, req.body, {
-      new: true,
-    }).lean();
+    const updated = await Field.findOneAndUpdate(
+      { _id: id, userId: req.userId },
+      req.body,
+      { new: true }
+    ).lean();
+
     return updated
       ? res.json({ id: updated._id, ...updated })
       : res.status(404).json({ error: "Not found" });
   }
-
-  const idx = InMemoryStore.fields.findIndex((x) => x.id === id);
-  if (idx === -1) return res.status(404).json({ error: "Not found" });
-
-  InMemoryStore.fields[idx] = { ...InMemoryStore.fields[idx], ...req.body };
-  res.json(InMemoryStore.fields[idx]);
 });
+
 
 // DELETE
 router.delete("/:id", async (req, res) => {
-  const id = req.params.id;
+  const { id } = req.params;
 
   if (Field.db.readyState === 1) {
-    await Area.deleteMany({ fieldId: id });
-    await Field.findByIdAndDelete(id);
+    await Area.deleteMany({ fieldId: id, userId: req.userId });
+    await Field.findOneAndDelete({ _id: id, userId: req.userId });
     return res.json({ ok: true });
   }
-
-  InMemoryStore.fields = InMemoryStore.fields.filter((f) => f.id !== id);
-  InMemoryStore.areas = InMemoryStore.areas.filter((a) => a.fieldId !== id);
-  res.json({ ok: true });
 });
+
+
 
 router.post("/:fieldId/areas", async (req, res) => {
   const { fieldId } = req.params;
@@ -124,7 +151,7 @@ router.post("/:fieldId/areas", async (req, res) => {
 
   try {
     if (Area.db.readyState === 1) {
-      const areaDoc = new Area({ ...payload, fieldId });
+      const areaDoc = new Area({ ...payload, fieldId, userId: req.userId });
       await areaDoc.save();
       return res.status(201).json({ id: areaDoc._id, ...areaDoc.toObject() });
     }
@@ -138,13 +165,14 @@ router.post("/:fieldId/areas", async (req, res) => {
   }
 });
 
+
 /* UPDATE AREA */
 router.put("/:fieldId/areas/:areaId", async (req, res) => {
   const { fieldId, areaId } = req.params;
 
   try {
     if (Area.db.readyState === 1) {
-      const updated = await Area.findByIdAndUpdate(areaId, req.body, {
+      const updated = await Area.findOneAndUpdate({_id: areaId, userId: req.userId}, req.body, {
         new: true,
       }).lean();
 
@@ -168,13 +196,15 @@ router.put("/:fieldId/areas/:areaId", async (req, res) => {
   }
 });
 
+
+
 /* DELETE AREA */
 router.delete("/:fieldId/areas/:areaId", async (req, res) => {
   const { fieldId, areaId } = req.params;
 
   try {
     if (Area.db.readyState === 1) {
-      await Area.findByIdAndDelete(areaId);
+      await Area.findOneAndDelete({ _id: areaId, userId: req.userId });
       return res.json({ ok: true });
     }
 

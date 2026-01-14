@@ -7,7 +7,7 @@ export function generateToken(user) {
 
     return jwt.sign(
         {
-            userId: user._id,
+            id: user._id,
             email: user.email
         },
         process.env.JWT_SECRET,

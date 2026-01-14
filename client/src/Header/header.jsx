@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 export default function Header() {
-  const { isAuthenticated, email, logout } = useAuth();
+  const { isAuthenticated, user,email, logout } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
@@ -49,7 +49,7 @@ export default function Header() {
 
               <div className="hidden sm:block text-left">
                 <div className="text-sm font-medium text-gray-700">
-                  {email}
+                  {user?.fullName || "User"}
                 </div>
               </div>
 

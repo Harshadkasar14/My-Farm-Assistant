@@ -1,5 +1,5 @@
 import axios from "axios";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 // 1. Create context
 const AuthContext = createContext();
@@ -7,25 +7,40 @@ const AuthContext = createContext();
 // 2. Custom hook
 export const useAuth = () => useContext(AuthContext);
 
+const API = "http://localhost:5000/api/users";
+
 // 3. Provider
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setAuthenticated] = useState(false);
-  const [email, setEmail] = useState(null);
+  const [user, setUser] = useState(null);
 
-  const API = "http://localhost:5000/api/users";
+  
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+
+    if (savedUser && token) {
+      setUser(JSON.parse(savedUser));
+      setAuthenticated(true);
+    }
+  }, []);
 
   async function login(email, password) {
     try {
-      await axios.post(`${API}/login`, { email, password });
+      const res=await axios.post(`${API}/login`, { email, password });
 
+       // ✅ Save auth data
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      setUser(res.data.user);
       setAuthenticated(true);
-      setEmail(email);
+      
 
       return { success: true };
     } catch (error) {
-      setAuthenticated(false);
-      setEmail(null);
-
+      logout()
+    
       if (error.response?.status === 404) {
         return { success: false, message: "User not found. Please sign up." };
       }
@@ -37,12 +52,15 @@ export const AuthProvider = ({ children }) => {
   }
 
   function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
     setAuthenticated(false);
-    setEmail(null);
+    setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout, email }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout, user, email: user?.email }}>
       {children}
     </AuthContext.Provider>
   );

@@ -19,7 +19,7 @@ const Login = () => {
 
        if (result.success)
         { 
-            navigate(`/todays_work`)
+            navigate(`/todays_work`, { replace: true })
         }else{
              setErrorMessage(result.message);
         }         

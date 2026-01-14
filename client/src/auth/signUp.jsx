@@ -42,7 +42,7 @@ const Signup = () => {
       });
       setMessage("Signup successful! Redirecting to login...");
       setTimeout(() => {
-        navigate("/login");
+        navigate("/login", { replace: true });
       }, 2000);
     } catch (error) {
       setMessage("Signup failed. Please try again.");

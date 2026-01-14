@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
 import {
   ArrowLeft,
   Plus,
@@ -18,6 +19,7 @@ import {
   apiGetCropInstances,
   apiCreateCropInstance,
 } from "../api/areaApi.js";
+
 
 export default function AreaDetail() {
   const { areaId } = useParams();
@@ -58,22 +60,33 @@ export default function AreaDetail() {
   }
 
   async function saveCrop() {
+    // Validation
+  if (form.cropType === "library" && !form.libraryCropName) {
+    alert("Please select a crop");
+    return;
+  }
+
+  if (form.cropType === "custom" && !form.customName) {
+    alert("Please enter crop name");
+    return;
+  }
+
+  // Generate crop instance ID (THIS is the real ID)
+  const cropId = uuidv4();
+
+   const cropName =
+    form.cropType === "library"
+      ? form.libraryCropName
+      : form.customName;
     const payload = {
+      cropId,
       areaId,
       startDate: form.startDate + "T00:00:00Z",
-      custom: form.cropType === "custom",
-      name:
-        form.cropType === "library"
-          ? form.instanceName ||
-            libraryCrops.find((c) => c._id === form.libraryCropId)?.nameEn +
-              " - " +
-              area.name
-          : form.customName,
+      name: form.instanceName || `${cropName} - ${area.name}`,
+      baseCropName: cropName,      // for reference / guide
     };
 
-    if (form.cropType === "library") {
-      payload.libraryCropId = form.libraryCropId;
-    }
+   
 
     await apiCreateCropInstance(payload);
 
@@ -200,13 +213,13 @@ export default function AreaDetail() {
                   <label className="text-sm font-medium">Select Library Crop</label>
                   <select
                     className="w-full border p-2 mt-1 rounded"
-                    value={form.libraryCropId}
-                    onChange={(e) => setForm({ ...form, libraryCropId: e.target.value })}
+                    value={form.libraryCropName}
+                    onChange={(e) => setForm({ ...form, libraryCropName: e.target.value })}
                   >
                     <option value="">Select Crop</option>
                     {libraryCrops.map((c) => (
-                      <option key={c._id} value={c._id}>
-                        {c.nameEn}
+                      <option key={c.name} value={c.name}>
+                        {c.name}
                       </option>
                     ))}
                   </select>

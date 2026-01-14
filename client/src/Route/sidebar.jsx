@@ -16,11 +16,6 @@ export default function Sidebar() {
           <span>Calendar</span>
         </Link>
 
-        <Link to="/field_details" className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg">
-          <Layers className="w-5 h-5" />
-          <span>Field Details</span>
-        </Link>
-
         <Link to="/field_list" className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg">
           <Map className="w-5 h-5" />
           <span>Field List</span>

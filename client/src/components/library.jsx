@@ -1,6 +1,6 @@
 
 import React, { useEffect, useMemo, useState } from "react";
-
+import api from "../api/axiosApi.js";
 
 
 function CropCard({ crop }) {
@@ -192,9 +192,8 @@ export default function Library() {
   useEffect(() => {
   async function loadFromBackend() {
     try {
-      const res = await fetch("http://localhost:5000/api/crop-libraries");
-      const data = await res.json();
-      setCrops(data);
+      const res = await api.get("/api/crop-libraries");
+      setCrops(res.data);
     } catch (err) {
       console.error("Error loading crops", err);
       setErrorMode(true);
